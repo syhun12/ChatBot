@@ -4,6 +4,7 @@ import {
   Bot,
   CheckCircle2,
   ChevronLeft,
+  FileQuestion,
   FileText,
   HelpCircle,
   Languages,
@@ -17,15 +18,16 @@ import {
   ShieldCheck,
   ThumbsDown,
   ThumbsUp,
-  Wrench,
 } from "lucide-react";
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 
 const exampleQuestions = [
-  "Winch가 작동하지 않아요",
-  "브레이크가 해제되지 않아요",
-  "유압 압력이 정상 범위가 아니에요",
-  "체인 장력 편차가 발생해요",
+  "DMA 시스템은 어떤 기술로 구성되나요?",
+  "OMV-LiDAR는 DMA에서 어떤 역할을 하나요?",
+  "기존 선박에 DMA를 적용할 때 무엇을 검토하나요?",
+  "DMA Retrofit이란 무엇인가요?",
+  "Winch/Windlass에서는 어떤 데이터를 활용하나요?",
+  "DMA Degree 1.5는 어떤 수준인가요?",
 ];
 
 type Source = {
@@ -34,27 +36,29 @@ type Source = {
   page: string;
 };
 
+type AnswerItem = {
+  title: string;
+  body: string;
+};
+
 type AssistantAnswer = {
+  kind: "overview" | "role" | "checklist" | "process" | "data" | "insufficient";
   title: string;
   summary: string;
-  steps: Array<{ title: string; body: string }>;
-  warning: string;
+  items: AnswerItem[];
+  note?: string;
   sources: Source[];
 };
 
 type ChatMessage =
-  | {
-      id: string;
-      role: "user";
-      text: string;
-      time: string;
-    }
-  | {
-      id: string;
-      role: "assistant";
-      answer: AssistantAnswer;
-      time: string;
-    };
+  | { id: string; role: "user"; text: string; time: string }
+  | { id: string; role: "assistant"; answer: AssistantAnswer; time: string };
+
+const presentationSource = (page: string, section: string): Source => ({
+  title: "지역혁신클러스터 진도점검 발표자료",
+  section,
+  page,
+});
 
 function nowLabel() {
   return new Intl.DateTimeFormat("ko-KR", {
@@ -65,78 +69,267 @@ function nowLabel() {
 }
 
 function createMockAnswer(question: string): AssistantAnswer {
-  const normalized = question.toLowerCase();
+  const q = question.toLowerCase().replaceAll(" ", "");
 
-  if (normalized.includes("유압") || normalized.includes("압력")) {
+  if (q.includes("degree") || q.includes("1.5")) {
     return {
-      title: "유압 계통 점검 순서",
-      summary: "유압 압력이 정상 범위를 벗어날 경우 오일량, 펌프, 필터, 밸브와 누유 상태를 순서대로 확인해야 합니다.",
-      steps: [
-        { title: "오일 레벨 확인", body: "탱크 오일 레벨이 권장 범위에 있는지 확인하고 부족하면 지정 유압유를 보충합니다." },
-        { title: "펌프 작동 상태 확인", body: "펌프 기동 여부와 이상 소음·진동을 확인하고 흡입측 공기 유입 여부를 점검합니다." },
-        { title: "필터 차압 확인", body: "필터 막힘 표시 또는 차압 값을 확인하고 기준 초과 시 필터 상태를 점검합니다." },
-        { title: "밸브 및 누유 확인", body: "릴리프 밸브 설정과 배관·피팅부 누유 여부를 확인합니다." },
+      kind: "insufficient",
+      title: "DMA Degree 1.5의 상세 기능 기준은 현재 자료만으로 확정할 수 없습니다",
+      summary:
+        "진도점검 발표자료에서는 DMA Degree 1.5를 ‘과제 정의’ 수준으로 표기하고 있으며, 기존 선박의 자율기능 수준을 Degree 0/1에서 DMA Degree 1.5~2.0으로 향상시키는 것을 Retrofit 목표로 설명합니다.",
+      items: [
+        {
+          title: "자료에서 확인되는 내용",
+          body: "DMA Degree 1.5는 본 과제에서 정의한 자율기능 수준이며, 기존 선박의 계류·묘박 관련 장비와 제어시스템을 개조하여 자율화 수준을 높이는 목표와 연결됩니다.",
+        },
+        {
+          title: "자료에서 확인되지 않는 내용",
+          body: "Degree 1.5의 세부 기능 목록, 자동화 범위, 운전 권한, 단계별 판정 조건은 이 발표자료에 구체적으로 제시되어 있지 않습니다.",
+        },
+        {
+          title: "추가 지식자료 필요",
+          body: "향후 자율기능 정의서, 제어 요구사항, 시스템 사양서가 등록되면 해당 근거를 기반으로 상세 기준을 답변하도록 구성하는 것이 적절합니다.",
+        },
       ],
-      warning: "설정 압력을 임의로 변경하지 말고, 압력 계통 점검 전 잔압 제거 절차를 따르세요.",
+      note: "RAG 챗봇은 근거가 없는 세부사항을 임의로 생성하지 않고, 현재 지식자료의 한계를 사용자에게 알려야 합니다.",
+      sources: [presentationSource("p.19", "DMA Retrofit 정의 및 자율기능 수준")],
+    };
+  }
+
+  if (q.includes("retrofit") || q.includes("리트로핏") || q.includes("개조")) {
+    return {
+      kind: "process",
+      title: "DMA Retrofit은 기존 선박의 자율 계류·묘박 기능을 높이기 위한 공학적 개조입니다",
+      summary:
+        "발표자료에서는 신조 도면(Ship Construction File) 대비 계류·묘박 관련 장비, 제어, 전력, 통신, 센서, 갑판구조를 변경 또는 추가하는 행위를 DMA Retrofit으로 정의합니다.",
+      items: [
+        {
+          title: "1. Pre-Assessment",
+          body: "대상선의 기존 시스템과 자율기능 요건을 사전 검토하여 Retrofit 필요 여부와 검토 범위를 판단합니다.",
+        },
+        {
+          title: "2. Retrofit 범위 결정",
+          body: "기존 탑재 장치, 구조·공간, 전력 시스템, 계류 배열 등 변경 영향을 검토해 개조 범위를 정합니다.",
+        },
+        {
+          title: "3. Retrofit Engineering",
+          body: "DMA Deck Machinery 및 제어시스템 설치를 위한 개조 설계, 도면, 승인 절차와 기술 요구사항을 구체화합니다.",
+        },
+        {
+          title: "Repair와 구분",
+          body: "노후·손상에 따른 동일 사양 교체나 단순 보강은 Retrofit이 아니라 Repair로 구분해 제외합니다.",
+        },
+      ],
       sources: [
-        { title: "DMA Operation Manual 4.2", section: "Hydraulic System - Pressure Monitoring", page: "p.82" },
-        { title: "Winch Maintenance Guide 2.1", section: "Hydraulic Unit Inspection", page: "p.37" },
+        presentationSource("p.6", "참여기관별 개발목표 및 내용"),
+        presentationSource("p.19", "DMA Retrofit 표준 프로세스 및 정의"),
       ],
     };
   }
 
-  if (normalized.includes("브레이크")) {
+  if (q.includes("기존선박") || q.includes("적용") || q.includes("검토")) {
     return {
-      title: "브레이크 해제 불가 시 확인 항목",
-      summary: "브레이크가 해제되지 않을 때는 인터록, 유압/공압 공급, 솔레노이드 신호와 기계적 걸림을 우선 확인합니다.",
-      steps: [
-        { title: "안전 인터록 확인", body: "Emergency Stop, 도어·커버 인터록, 운전 모드 조건이 정상인지 확인합니다." },
-        { title: "브레이크 공급 압력 확인", body: "브레이크 해제에 필요한 유압 또는 공압이 기준 범위에 도달하는지 확인합니다." },
-        { title: "솔레노이드 출력 확인", body: "PLC 출력과 솔레노이드 밸브 동작 여부를 확인합니다." },
-        { title: "기계적 걸림 확인", body: "브레이크 라이닝, 링크, 스프링 및 구동부에 고착이나 손상이 없는지 점검합니다." },
+      kind: "checklist",
+      title: "기존 선박에 DMA를 적용할 때는 장비뿐 아니라 선박 전체 연계 구조를 함께 검토합니다",
+      summary:
+        "총괄과제는 실증선의 기존 탑재 시스템을 분석하고 Deck Machinery의 사양·운용 특성, 제어계통과 인터페이스, 전력·제어·통신 시스템 연계 구조를 검토하도록 계획하고 있습니다.",
+      items: [
+        {
+          title: "Deck Machinery 현황",
+          body: "기존 Winch/Windlass 등 Deck Machinery 장비의 사양과 운용 특성을 분석합니다.",
+        },
+        {
+          title: "제어 및 인터페이스",
+          body: "기존 제어계통과 인터페이스 구조를 분석하고 DMA 제어 알고리즘과의 연계 가능성을 검토합니다.",
+        },
+        {
+          title: "전력·통신 연계",
+          body: "선박 전력, 제어, 통신 시스템의 연계 구조와 DMA 적용 시 필요한 변경 사항을 검토합니다.",
+        },
+        {
+          title: "구조·공간·계류 배열",
+          body: "설치 구조와 공간, 전력 시스템, Mooring Arrangement 등 개조에 영향을 주는 설계 요소를 함께 확인합니다.",
+        },
       ],
-      warning: "브레이크를 강제로 해제하지 말고 하중이 걸린 상태에서는 반드시 안전 조치를 선행하세요.",
       sources: [
-        { title: "Winch Maintenance Guide 2.1", section: "Brake Release Troubleshooting", page: "p.41" },
-        { title: "DMA Operation Manual 4.2", section: "Winch Brake Operation", page: "p.76" },
+        presentationSource("p.5", "실증선 기존 탑재 시스템 분석 및 통합 엔지니어링"),
+        presentationSource("p.6", "DMA Retrofit 대상선박 기존 시스템 분석"),
       ],
     };
   }
 
-  if (normalized.includes("체인") || normalized.includes("장력")) {
+  if (q.includes("lidar") || q.includes("omv") || q.includes("라이다")) {
     return {
-      title: "체인 장력 편차 확인 순서",
-      summary: "장력 편차가 발생하면 센서값, 체인 배열, 하중 분배 및 제어 기준값을 함께 확인해야 합니다.",
-      steps: [
-        { title: "장력 센서값 확인", body: "좌우 또는 각 라인의 장력값이 정상적으로 수신되고 있는지 확인합니다." },
-        { title: "체인 배열 확인", body: "체인의 꼬임, 비정상 마찰, 체인 스토퍼 간섭 여부를 확인합니다." },
-        { title: "하중 분배 확인", body: "선박 자세와 외력 조건을 고려하여 특정 라인에 하중이 집중되는지 확인합니다." },
-        { title: "제어 기준값 확인", body: "DMA 제어 기준값과 센서 영점·보정 상태를 확인합니다." },
+      kind: "role",
+      title: "OMV-LiDAR는 계류·묘박 과정의 외부환경과 선박 상태를 인지하는 핵심 센서 시스템입니다",
+      summary:
+        "발표자료는 LiDAR-영상 센서 융합을 통해 실시간 환경을 인지하고, 이를 기반으로 자율 판단 및 제어 알고리즘을 개발하는 구조를 제시합니다.",
+      items: [
+        {
+          title: "전방위 환경 감시",
+          body: "OMV-LiDAR 기반 전방위 감시 H/W와 센서 시스템을 통해 계류·묘박 주변 환경 정보를 확보합니다.",
+        },
+        {
+          title: "LiDAR + 영상 융합",
+          body: "LiDAR와 영상 데이터를 융합해 실시간 환경 및 선박 상태를 인식·분석하는 방향으로 개발합니다.",
+        },
+        {
+          title: "AI 상황 인식",
+          body: "AI 기반 상황 인식 모델과 선박 동역학·환경 조건 기반 시뮬레이션을 자율 판단에 활용합니다.",
+        },
+        {
+          title: "자율 제어 연계",
+          body: "인지 결과는 자율 묘박·계류 알고리즘과 연계되어 Winch/Windlass 제어 시스템의 판단 정보로 활용됩니다.",
+        },
       ],
-      warning: "장력이 급격히 증가하는 경우 작업구역 접근을 통제하고 현장 책임자에게 즉시 보고하세요.",
       sources: [
-        { title: "DMA Operation Manual 5.1", section: "Tension Monitoring", page: "p.104" },
-        { title: "Mooring System Guide 3.3", section: "Load Distribution", page: "p.58" },
+        presentationSource("p.3", "과제 개요 및 통합 시스템 구성"),
+        presentationSource("p.4", "2세부 OMV-LiDAR 개발전략"),
+      ],
+    };
+  }
+
+  if (q.includes("데이터") || q.includes("winch") || q.includes("windlass")) {
+    return {
+      kind: "data",
+      title: "Winch/Windlass는 센서 인터페이스 기반 운용 데이터를 통합 수집·처리하도록 개발됩니다",
+      summary:
+        "1세부 개발전략에는 IoT 제어 모듈과 DAQ 장치 설계, 센서 인터페이스 기반 Winch/Windlass 운용 데이터의 통합 수집·처리, 복합 센서 기반 제어 H/W 및 알고리즘 개발이 포함되어 있습니다.",
+      items: [
+        {
+          title: "IoT 제어 모듈 및 DAQ",
+          body: "Deck Machinery 운용 데이터를 취득하고 제어 시스템과 연계하기 위한 IoT 제어 모듈과 DAQ 장치를 설계합니다.",
+        },
+        {
+          title: "센서 데이터 통합",
+          body: "Winch/Windlass의 센서 인터페이스를 기반으로 운용 데이터를 통합 수집·처리하는 기술을 확보합니다.",
+        },
+        {
+          title: "복합 센서 기반 제어",
+          body: "수집된 센서 데이터를 활용할 수 있는 제어 H/W와 제어 알고리즘을 개발하는 것이 목표입니다.",
+        },
+        {
+          title: "세부 데이터 항목은 아직 미정",
+          body: "현재 발표자료에는 장력, 속도, 압력 등 개별 센서 항목이나 데이터 필드 목록이 구체적으로 정의되어 있지 않습니다.",
+        },
+      ],
+      note: "세부 센서 목록과 정상범위 값은 향후 장비 사양서·운용 매뉴얼이 확보된 뒤 지식베이스에 추가해야 합니다.",
+      sources: [presentationSource("p.4", "1세부 Deck Machinery 개발전략")],
+    };
+  }
+
+  if (q.includes("구성") || q.includes("시스템") || q.includes("dma") || q.includes("기술")) {
+    return {
+      kind: "overview",
+      title: "DMA 과제는 ‘자동 제어 + 환경 인지 + 데이터 연계’의 3개 기술축으로 구성됩니다",
+      summary:
+        "진도점검 발표자료에서 DMA 통합 시스템은 지능형 Winch/Windlass, OMV-LiDAR 기반 자율 제어, AI 기반 정박상태 정보 및 선박-항만 데이터 연계 플랫폼을 통합하는 구조로 제시됩니다.",
+      items: [
+        {
+          title: "1세부 · 지능형 Deck Machinery",
+          body: "AI 기반 장력 제어가 가능한 Winch/Windlass와 계류·묘박 자동 제어 시스템을 개발합니다.",
+        },
+        {
+          title: "2세부 · OMV-LiDAR 자율 제어",
+          body: "LiDAR-영상 센서 융합을 통한 실시간 환경 인지와 AI 기반 자율 판단·제어 알고리즘을 개발합니다.",
+        },
+        {
+          title: "3세부 · 데이터 연계 플랫폼",
+          body: "AI 기반 정박상태 정보를 생성하고 선박-항만 데이터를 자율 연계하는 통합 관제 플랫폼을 개발합니다.",
+        },
+        {
+          title: "총괄 · 통합 및 실증",
+          body: "실증선 개조, 선박-항만-육상 클라우드 실증환경, 선급 인증과 글로벌 사업화를 통해 전체 시스템을 통합 검증합니다.",
+        },
+      ],
+      sources: [
+        presentationSource("p.3", "과제 개요 및 세부과제 구성"),
+        presentationSource("p.4", "개발전략 Master Plan"),
       ],
     };
   }
 
   return {
-    title: "Winch 작동 불가 시 점검 순서",
-    summary: "Winch가 작동하지 않을 때는 전원, 안전 인터록, 제어 신호, 유압 계통과 기계적 상태를 순서대로 확인합니다.",
-    steps: [
-      { title: "전원 공급 확인", body: "전원 차단기, 퓨즈, 전원 케이블 연결 상태와 입력 전압을 확인합니다." },
-      { title: "비상 정지 및 인터록 확인", body: "Emergency Stop 해제 상태와 도어·커버·리미트 스위치 등 안전 인터록을 확인합니다." },
-      { title: "제어 신호 확인", body: "PLC/제어 패널의 입력·출력 신호, 알람, Local/Remote 상태를 확인합니다." },
-      { title: "유압 시스템 확인", body: "유압 오일 레벨, 펌프 작동, 압력, 필터 막힘과 누유 여부를 확인합니다." },
-      { title: "기계 상태 및 부하 확인", body: "드럼·브레이크·클러치, 로프 감김 상태와 과부하 여부를 확인합니다." },
+    kind: "insufficient",
+    title: "현재 등록된 발표자료에서 직접적인 근거를 찾기 어렵습니다",
+    summary:
+      "이 프로토타입은 진도점검 발표자료 내용만 데모 지식으로 사용하고 있습니다. 장비 매뉴얼, 제어 사양서, 알람 목록, 유지보수 절차서 등이 추가되면 현장 운용 질문까지 답변 범위를 확장할 수 있습니다.",
+    items: [
+      {
+        title: "현재 답변 가능한 범위",
+        body: "DMA 시스템 구성, 개발 기술, OMV-LiDAR 역할, Retrofit 개념과 검토 범위, 챗봇 개발 구조 등 발표자료에 명시된 내용입니다.",
+      },
+      {
+        title: "향후 필요한 자료",
+        body: "Winch/Windlass 매뉴얼, 제어 로직, 센서 목록 및 정상범위, 알람 코드, 점검·정비 절차, 장비 도면 등의 기술자료가 필요합니다.",
+      },
     ],
-    warning: "점검 전 장비를 정지하고 전원을 차단한 뒤 현장 안전절차에 따라 작업하세요.",
-    sources: [
-      { title: "DMA Operation Manual 4.2", section: "4.2.3 Winch 고장 시 점검 절차", page: "p.82" },
-      { title: "Winch Maintenance Guide 2.1", section: "2.1.5 Troubleshooting - No Operation", page: "p.37" },
-    ],
+    note: "근거가 부족한 경우 추정 답변보다 ‘자료 부족’을 명확히 표시하는 것이 RAG 기반 기술지원 챗봇의 기본 원칙입니다.",
+    sources: [presentationSource("p.21", "AI 챗봇 어시스턴트 개발 기반 구축")],
   };
+}
+
+function AnswerCard({ answer }: { answer: AssistantAnswer }) {
+  const insufficient = answer.kind === "insufficient";
+
+  return (
+    <article className="chat-answer-card">
+      <div className="chat-answer-top">
+        {insufficient ? <FileQuestion size={21} /> : <CheckCircle2 size={21} />}
+        <div>
+          <h2>{answer.title}</h2>
+          <p>{answer.summary}</p>
+        </div>
+      </div>
+
+      <div className="chat-steps">
+        {answer.items.map((item, index) => (
+          <div className="chat-step" key={`${answer.title}-${item.title}`}>
+            <span>{index + 1}</span>
+            <div>
+              <strong>{item.title}</strong>
+              <p>{item.body}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {answer.note && (
+        <div className="warning-box compact-warning">
+          <span className="warning-icon">!</span>
+          <strong>{insufficient ? "근거 범위 안내" : "참고"}</strong>
+          <span>{answer.note}</span>
+        </div>
+      )}
+
+      <div className="source-block">
+        <div className="source-title"><FileText size={15} /> 근거 자료</div>
+        <div className="source-grid">
+          {answer.sources.map((source) => (
+            <div className="source-chip" key={`${source.page}-${source.section}`}>
+              <div>
+                <strong>{source.title}</strong>
+                <span>{source.section}</span>
+              </div>
+              <b>{source.page}</b>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="chat-answer-footer">
+        <div className="answer-badges">
+          <span className="status-pill blue"><ShieldCheck size={14} />발표자료 근거 답변</span>
+          <span className="status-pill mint"><FileText size={14} />{answer.sources.length}건 참조</span>
+        </div>
+        <div className="feedback">
+          <span>도움이 되었나요?</span>
+          <button aria-label="도움됨"><ThumbsUp size={15} /></button>
+          <button aria-label="도움되지 않음"><ThumbsDown size={15} /></button>
+        </div>
+      </div>
+    </article>
+  );
 }
 
 export default function Home() {
@@ -185,7 +378,7 @@ export default function Home() {
       setMessages((prev) => [...prev, assistantMessage]);
       setIsThinking(false);
       window.setTimeout(() => inputRef.current?.focus(), 50);
-    }, 700);
+    }, 650);
   }
 
   function onSubmit(event: FormEvent) {
@@ -224,7 +417,6 @@ export default function Home() {
         </nav>
 
         <div className="sidebar-spacer" />
-
         <button className="nav-item admin-item">
           <Settings size={20} />
           {!collapsed && <span>관리자</span>}
@@ -236,8 +428,7 @@ export default function Home() {
           <div className="topbar-left">
             {hasConversation && (
               <button className="reset-button" onClick={resetConversation}>
-                <RotateCcw size={17} />
-                새 질문
+                <RotateCcw size={17} /> 새 질문
               </button>
             )}
           </div>
@@ -254,12 +445,12 @@ export default function Home() {
               <div className="eyebrow">Dynamic Mooring &amp; Anchoring</div>
               <h1>DMA 관련 내용을 질문하세요</h1>
               <p>
-                기술 문서와 매뉴얼을 기반으로 관련 정보를 검색하고,
-                RAG 방식으로 근거 중심의 답변을 제공합니다.
+                현재 프로토타입은 진도점검 발표자료를 데모 지식으로 사용합니다.
+                향후 기술문서와 매뉴얼이 추가되면 RAG 검색 범위를 확장합니다.
               </p>
               <div className="status-row">
-                <span className="status-pill green"><span className="dot" />지식베이스 연결됨</span>
-                <span className="status-pill blue"><ShieldCheck size={16} />RAG 기반 응답</span>
+                <span className="status-pill green"><span className="dot" />데모 지식자료 적용</span>
+                <span className="status-pill blue"><ShieldCheck size={16} />근거 중심 응답 UI</span>
               </div>
             </div>
 
@@ -279,11 +470,11 @@ export default function Home() {
             </form>
 
             <div className="examples-wrap">
-              <div className="section-label">예시 질문</div>
+              <div className="section-label">발표자료 기반 예시 질문</div>
               <div className="examples-grid">
-                {exampleQuestions.map((item, index) => (
+                {exampleQuestions.map((item) => (
                   <button className="example-card" key={item} onClick={() => submitQuestion(item)}>
-                    <div className="example-icon">{index === 0 ? <Wrench size={20} /> : <Bot size={20} />}</div>
+                    <div className="example-icon"><Bot size={20} /></div>
                     <span>{item}</span>
                     <Send size={16} />
                   </button>
@@ -296,15 +487,13 @@ export default function Home() {
             <div className="chat-header">
               <div>
                 <strong>DMA AI Q&amp;A</strong>
-                <span>현재 대화는 서버에 저장되지 않습니다.</span>
+                <span>현재 세션의 대화는 서버에 저장되지 않습니다.</span>
               </div>
-              <div className="chat-status"><span className="dot" /> RAG Ready</div>
+              <div className="chat-status"><span className="dot" /> 발표자료 Demo</div>
             </div>
 
             <div className="chat-scroll">
-              <div className="session-start">
-                <span>현재 세션</span>
-              </div>
+              <div className="session-start"><span>현재 세션</span></div>
 
               {messages.map((message) => {
                 if (message.role === "user") {
@@ -320,63 +509,10 @@ export default function Home() {
 
                 return (
                   <div className="message-row assistant-row" key={message.id}>
-                    <div className="assistant-avatar"><Bot size={20} /></div>
+                    <div className="assistant-avatar"><Bot size={19} /></div>
                     <div className="message-stack assistant-stack">
                       <div className="assistant-label">DMA Assistant <span>{message.time}</span></div>
-                      <article className="chat-answer-card">
-                        <div className="chat-answer-top">
-                          <CheckCircle2 size={20} />
-                          <div>
-                            <h2>{message.answer.title}</h2>
-                            <p>{message.answer.summary}</p>
-                          </div>
-                        </div>
-
-                        <div className="chat-steps">
-                          {message.answer.steps.map((step, index) => (
-                            <div className="chat-step" key={`${message.id}-${step.title}`}>
-                              <span>{index + 1}</span>
-                              <div>
-                                <strong>{step.title}</strong>
-                                <p>{step.body}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="warning-box compact-warning">
-                          <span className="warning-icon">!</span>
-                          <strong>안전 주의</strong>
-                          <span>{message.answer.warning}</span>
-                        </div>
-
-                        <div className="source-block">
-                          <div className="source-title"><FileText size={17} /> 근거 문서</div>
-                          <div className="source-grid">
-                            {message.answer.sources.map((source) => (
-                              <button className="source-chip" key={`${message.id}-${source.title}`}>
-                                <div>
-                                  <strong>{source.title}</strong>
-                                  <span>{source.section}</span>
-                                </div>
-                                <b>{source.page}</b>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="chat-answer-footer">
-                          <div className="answer-badges">
-                            <span className="status-pill blue"><ShieldCheck size={14} />RAG 기반</span>
-                            <span className="status-pill mint"><FileText size={14} />문서 {message.answer.sources.length}건</span>
-                          </div>
-                          <div className="feedback">
-                            <span>도움이 되었나요?</span>
-                            <button aria-label="좋아요"><ThumbsUp size={16} /></button>
-                            <button aria-label="싫어요"><ThumbsDown size={16} /></button>
-                          </div>
-                        </div>
-                      </article>
+                      <AnswerCard answer={message.answer} />
                     </div>
                   </div>
                 );
@@ -384,23 +520,22 @@ export default function Home() {
 
               {isThinking && (
                 <div className="message-row assistant-row">
-                  <div className="assistant-avatar"><Bot size={20} /></div>
+                  <div className="assistant-avatar"><Bot size={19} /></div>
                   <div className="thinking-card">
-                    <Loader2 className="spin" size={18} />
+                    <Loader2 size={19} className="spin" />
                     <div>
-                      <strong>관련 문서를 확인하고 있습니다.</strong>
-                      <span>질문과 연관된 근거를 검색하는 중...</span>
+                      <strong>근거 자료를 확인하고 있습니다</strong>
+                      <span>현재는 진도점검 발표자료 기반 데모 응답입니다.</span>
                     </div>
                   </div>
                 </div>
               )}
-
               <div ref={endRef} />
             </div>
 
-            <div className="composer-wrap">
-              <form className="chat-composer" onSubmit={onSubmit}>
-                <button type="button" className="attach-button" aria-label="첨부"><Paperclip size={20} /></button>
+            <form className="chat-composer-wrap" onSubmit={onSubmit}>
+              <div className="chat-composer">
+                <Paperclip size={21} />
                 <textarea
                   ref={inputRef}
                   rows={1}
@@ -410,12 +545,12 @@ export default function Home() {
                   placeholder="추가 질문을 입력하세요..."
                   aria-label="추가 질문 입력"
                 />
-                <button className="send-button" type="submit" aria-label="질문 보내기" disabled={isThinking || !question.trim()}>
-                  <Send size={20} />
+                <button className="send-button" type="submit" aria-label="질문 보내기" disabled={isThinking}>
+                  {isThinking ? <Loader2 size={19} className="spin" /> : <Send size={20} />}
                 </button>
-              </form>
-              <div className="composer-note">대화 내용은 현재 브라우저 화면에서만 유지되며 새로고침 시 초기화됩니다.</div>
-            </div>
+              </div>
+              <div className="composer-caption">Enter 전송 · Shift + Enter 줄바꿈 · 새로고침 시 현재 대화 초기화</div>
+            </form>
           </section>
         )}
       </section>
