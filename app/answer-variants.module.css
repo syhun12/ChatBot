@@ -1,108 +1,90 @@
 .answerCard {
-  --kind: #2468a2;
-  --kind-soft: #edf3f8;
   overflow: hidden;
   background: #fff;
-  border: 1px solid #d4dde4;
-  border-radius: 9px;
-  box-shadow: 0 2px 7px rgba(27,46,61,.035);
+  border: 1px solid #d9e0e6;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(31,49,67,.05);
 }
 
 .answerHeader {
-  position: relative;
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr) auto;
-  gap: 12px;
+  grid-template-columns: 36px minmax(0,1fr) auto;
   align-items: start;
-  padding: 17px 18px 15px;
-  border-bottom: 1px solid #e5eaee;
+  gap: 12px;
+  padding: 18px 18px 16px;
+  border-bottom: 1px solid #e6ebef;
   background: #fff;
-}
-
-.answerHeader::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--kind);
 }
 
 .kindIcon {
   width: 36px;
   height: 36px;
-  border: 1px solid #d5dee5;
-  border-radius: 7px;
   display: grid;
   place-items: center;
-  color: var(--kind);
-  background: var(--kind-soft);
+  border: 1px solid #cfe0e6;
+  border-radius: 9px;
+  color: #285f74;
+  background: #eef6f8;
 }
 
 .kindLabel {
-  margin-top: 2px;
-  padding: 4px 0 4px 9px;
-  border-left: 1px solid #dce3e8;
-  color: var(--kind);
-  font-size: 9.5px;
-  line-height: 1;
-  font-weight: 750;
-  letter-spacing: .02em;
+  margin-top: 1px;
+  padding: 5px 7px;
+  border: 1px solid #dce4e9;
+  border-radius: 6px;
+  color: #6e7c89;
+  background: #fafbfc;
+  font-size: 9px;
+  font-weight: 760;
   white-space: nowrap;
 }
 
 .answerTitle {
   margin: 0;
-  color: #1f2d3a;
-  font-size: 15px;
-  line-height: 1.5;
+  color: #16283a;
+  font-size: 17px;
+  line-height: 1.48;
+  letter-spacing: -.018em;
   font-weight: 740;
-  letter-spacing: -.025em;
 }
 
 .answerSummary {
   margin: 6px 0 0;
-  color: #64727e;
+  color: #647487;
   font-size: 12px;
   line-height: 1.7;
 }
 
-.body { padding: 15px 18px 17px; }
+.body { padding: 16px 18px 18px 66px; }
 
 .overviewGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  border-top: 1px solid #dfe5ea;
-  border-left: 1px solid #dfe5ea;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 8px;
 }
-
 .overviewCard {
   position: relative;
-  min-height: 112px;
-  padding: 14px 14px 13px;
-  border-right: 1px solid #dfe5ea;
-  border-bottom: 1px solid #dfe5ea;
-  background: #fff;
+  min-height: 118px;
+  padding: 14px;
+  border: 1px solid #dde5ea;
+  border-radius: 10px;
+  background: #f8fafb;
 }
-
 .overviewCard::before {
   content: "";
   position: absolute;
-  left: 0;
   top: 0;
-  width: 100%;
+  left: 14px;
+  right: 14px;
   height: 2px;
-  background: var(--kind);
-  opacity: .68;
+  background: #8bb7c5;
 }
-
 .overviewNumber {
-  display: inline-block;
-  margin-bottom: 12px;
-  color: #7b8a95;
+  display: block;
+  margin: 6px 0 12px;
+  color: #2b6f87;
   font-size: 9px;
-  font-weight: 780;
+  font-weight: 820;
   letter-spacing: .08em;
 }
 
@@ -113,12 +95,11 @@
 .dataNode strong,
 .limitCard strong {
   display: block;
-  color: #293a47;
-  font-size: 11.5px;
+  color: #263a4d;
+  font-size: 12px;
   line-height: 1.5;
-  font-weight: 700;
+  font-weight: 720;
 }
-
 .overviewCard p,
 .flowNode p,
 .checkItem p,
@@ -126,225 +107,228 @@
 .dataNode p,
 .limitCard p {
   margin: 6px 0 0;
-  color: #6b7883;
-  font-size: 10.5px;
-  line-height: 1.62;
+  color: #6c7a88;
+  font-size: 11px;
+  line-height: 1.6;
 }
 
 .roleFlow {
-  position: relative;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-}
-.roleFlow::before {
-  content: "";
-  position: absolute;
-  left: 5%;
-  right: 5%;
-  top: 19px;
-  height: 1px;
-  background: #cedae2;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  gap: 20px;
 }
 .flowNode {
   position: relative;
   min-width: 0;
-  padding: 13px 12px 12px;
-  border: 1px solid #dbe3e8;
-  border-radius: 6px;
-  background: #fff;
-  z-index: 1;
+  padding: 14px;
+  border: 1px solid #dce5e9;
+  border-radius: 10px;
+  background: #f9fbfc;
+}
+.flowNode:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -21px;
+  width: 20px;
+  height: 1px;
+  background: #b9cbd2;
+}
+.flowNode:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: calc(50% - 3px);
+  right: -21px;
+  width: 6px;
+  height: 6px;
+  border-top: 1px solid #8fa9b3;
+  border-right: 1px solid #8fa9b3;
+  transform: rotate(45deg);
 }
 .flowStep {
-  display: inline-flex;
+  display: inline-block;
   margin-bottom: 10px;
-  padding: 3px 6px;
-  border: 1px solid #cfdde4;
-  border-radius: 4px;
-  color: var(--kind);
-  background: #fff;
-  font-size: 8.5px;
-  font-weight: 780;
-  letter-spacing: .04em;
+  color: #2b6f87;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .06em;
 }
-.flowArrow { display: none; }
 
 .checklist {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  border-top: 1px solid #dfe5ea;
-  border-left: 1px solid #dfe5ea;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 8px;
 }
 .checkItem {
   display: grid;
-  grid-template-columns: 27px 1fr;
+  grid-template-columns: 28px minmax(0,1fr);
   gap: 9px;
   padding: 13px;
-  border-right: 1px solid #dfe5ea;
-  border-bottom: 1px solid #dfe5ea;
+  border: 1px solid #dfe5ea;
+  border-radius: 9px;
   background: #fff;
 }
 .checkIcon {
-  width: 26px;
-  height: 26px;
-  border: 1px solid #cedbe5;
-  border-radius: 5px;
+  width: 27px;
+  height: 27px;
   display: grid;
   place-items: center;
-  color: var(--kind);
-  background: #f7fafc;
+  border-radius: 7px;
+  color: #2f765f;
+  background: #edf7f3;
 }
 
-.processTimeline { display: grid; }
+.processTimeline { display: grid; gap: 0; }
 .processItem {
   position: relative;
   display: grid;
-  grid-template-columns: 34px 1fr;
-  gap: 11px;
-  min-height: 66px;
+  grid-template-columns: 34px minmax(0,1fr);
+  gap: 12px;
+  min-height: 70px;
 }
 .processItem:not(:last-child)::before {
   content: "";
   position: absolute;
   left: 16px;
-  top: 31px;
-  bottom: -1px;
+  top: 33px;
+  bottom: 0;
   width: 1px;
-  background: #ccd9e3;
+  background: #cbd8de;
 }
 .processIndex {
   z-index: 1;
-  width: 32px;
-  height: 32px;
-  border: 1px solid #cdd8e0;
-  border-radius: 50%;
+  width: 33px;
+  height: 33px;
   display: grid;
   place-items: center;
-  color: var(--kind);
-  background: #fff;
+  border: 1px solid #b9d0d9;
+  border-radius: 50%;
+  color: #2b6f87;
+  background: #f1f7f9;
   font-size: 10px;
   font-weight: 800;
 }
-.processContent { padding: 0 0 16px; }
+.processContent { padding: 1px 0 17px; }
 
 .dataPipeline {
-  position: relative;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-}
-.dataPipeline::before {
-  content: "";
-  position: absolute;
-  left: 5%;
-  right: 5%;
-  top: 19px;
-  height: 1px;
-  background: #cddbd6;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  gap: 20px;
 }
 .dataNode {
   position: relative;
   min-width: 0;
-  padding: 13px 12px 12px;
-  border: 1px solid #d8e2de;
-  border-radius: 6px;
-  background: #fff;
-  z-index: 1;
+  padding: 14px;
+  border: 1px solid #dce5e2;
+  border-radius: 10px;
+  background: #f8fbfa;
+}
+.dataNode:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -21px;
+  width: 20px;
+  height: 1px;
+  background: #b7cdc6;
 }
 .dataIndex {
-  display: inline-grid;
+  display: grid;
   place-items: center;
   width: 24px;
   height: 24px;
   margin-bottom: 10px;
-  border: 1px solid #cbded7;
-  border-radius: 4px;
-  color: var(--kind);
-  background: #fff;
+  border-radius: 6px;
+  color: #2f765f;
+  background: #e9f5f0;
   font-size: 9px;
-  font-weight: 800;
+  font-weight: 820;
 }
-.dataArrow { display: none; }
 
 .limitGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(3,minmax(0,1fr));
   gap: 8px;
 }
 .limitCard {
   padding: 13px;
-  border: 1px solid #dfe5e9;
-  border-radius: 6px;
-  background: #fff;
+  border: 1px solid #dfe5ea;
+  border-radius: 9px;
+  background: #fafbfc;
 }
-.limitCard:nth-child(1) { border-top: 2px solid #5e8b72; }
-.limitCard:nth-child(2) { border-top: 2px solid #b78939; }
-.limitCard:nth-child(3) { border-top: 2px solid #778b9b; }
+.limitCard:nth-child(1) { border-color: #d1e3db; background: #f6faf8; }
+.limitCard:nth-child(2) { border-color: #eadcbf; background: #fcfaf5; }
+.limitCard:nth-child(3) { border-color: #dce3e9; background: #f8fafb; }
 .limitState {
-  display: inline-block;
+  display: block;
   margin-bottom: 9px;
-  color: #788691;
-  font-size: 8.5px;
-  font-weight: 800;
-  letter-spacing: .035em;
+  color: #788592;
+  font-size: 8px;
+  font-weight: 820;
+  letter-spacing: .08em;
+  text-transform: uppercase;
 }
 
 .noteBox {
-  margin: 0 18px 15px;
+  margin: 0 18px 15px 66px;
   display: grid;
-  grid-template-columns: 22px auto 1fr;
+  grid-template-columns: 23px auto minmax(0,1fr);
   gap: 8px;
   align-items: center;
   padding: 10px 11px;
-  border: 1px solid #e1cfaa;
-  border-radius: 5px;
-  color: #715622;
+  border: 1px solid #e4d1a9;
+  border-radius: 8px;
+  color: #765a28;
   background: #fcfaf5;
   font-size: 10px;
-  line-height: 1.5;
 }
 .noteIcon {
-  width: 20px;
-  height: 20px;
-  border: 1px solid #d2b77e;
-  border-radius: 50%;
+  width: 21px;
+  height: 21px;
   display: grid;
   place-items: center;
-  color: #8d681e;
-  background: #fff;
+  border-radius: 50%;
+  color: #fff;
+  background: #b78229;
+  font-size: 10px;
   font-weight: 800;
 }
 
-.kind_overview { --kind: #2468a2; --kind-soft: #eef4f8; }
-.kind_role { --kind: #357982; --kind-soft: #eff6f6; }
-.kind_checklist { --kind: #416e96; --kind-soft: #f0f4f8; }
-.kind_process { --kind: #675f8c; --kind-soft: #f4f2f7; }
-.kind_data { --kind: #477864; --kind-soft: #f0f6f3; }
-.kind_insufficient { --kind: #9a6b26; --kind-soft: #faf6ee; }
+.kind_overview .kindIcon,
+.kind_role .kindIcon,
+.kind_checklist .kindIcon,
+.kind_process .kindIcon,
+.kind_data .kindIcon { color: #285f74; background: #eef6f8; border-color: #cfe0e6; }
+.kind_insufficient .kindIcon { color: #8b611d; background: #fbf5e8; border-color: #ead9b7; }
 
-@media (max-width: 1100px) {
-  .roleFlow, .dataPipeline { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .roleFlow::before, .dataPipeline::before { display: none; }
+@media (max-width: 1120px) {
+  .body { padding-left: 52px; }
+  .noteBox { margin-left: 52px; }
+  .roleFlow,
+  .dataPipeline { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+  .flowNode::after,
+  .flowNode::before,
+  .dataNode::after { display: none; }
 }
 
 @media (max-width: 720px) {
-  .answerCard { border-radius: 7px; box-shadow: none; }
-  .answerHeader { grid-template-columns: 34px 1fr; gap: 9px; padding: 14px 13px 12px; }
-  .kindIcon { width: 32px; height: 32px; border-radius: 6px; }
+  .answerCard { border-radius: 11px; box-shadow: none; }
+  .answerHeader { grid-template-columns: 32px minmax(0,1fr); gap: 9px; padding: 14px 13px 12px; }
+  .kindIcon { width: 32px; height: 32px; border-radius: 8px; }
   .kindIcon svg { width: 17px; height: 17px; }
-  .kindLabel { grid-column: 2; width: fit-content; margin-top: -2px; padding: 0; border-left: 0; font-size: 8.5px; }
-  .answerTitle { font-size: 13px; line-height: 1.48; }
-  .answerSummary { margin-top: 5px; font-size: 10.5px; line-height: 1.65; }
-  .body { padding: 12px; }
-  .overviewGrid, .checklist, .roleFlow, .dataPipeline, .limitGrid { grid-template-columns: 1fr; }
-  .overviewCard { min-height: 0; padding: 12px; }
-  .overviewNumber { margin-bottom: 8px; }
-  .flowNode, .dataNode { padding: 11px; }
-  .flowStep, .dataIndex { margin-bottom: 8px; }
-  .checkItem { padding: 11px; }
-  .processItem { min-height: 60px; grid-template-columns: 31px 1fr; gap: 9px; }
+  .kindLabel { grid-column: 2; width: fit-content; margin-top: -1px; }
+  .answerTitle { font-size: 14px; line-height: 1.5; }
+  .answerSummary { font-size: 11px; line-height: 1.65; }
+  .body { padding: 12px 13px 14px; }
+  .overviewGrid,
+  .checklist,
+  .roleFlow,
+  .dataPipeline,
+  .limitGrid { grid-template-columns: 1fr; gap: 7px; }
+  .overviewCard { min-height: 0; }
+  .processItem { grid-template-columns: 30px minmax(0,1fr); min-height: 64px; }
   .processIndex { width: 29px; height: 29px; }
   .processItem:not(:last-child)::before { left: 14px; top: 29px; }
-  .noteBox { margin: 0 12px 12px; grid-template-columns: 21px 1fr; }
+  .noteBox { margin: 0 13px 12px; grid-template-columns: 22px minmax(0,1fr); }
   .noteBox > span:last-child { grid-column: 1 / -1; }
 }
