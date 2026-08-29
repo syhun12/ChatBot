@@ -1,0 +1,335 @@
+.answerCard {
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #dbe4f0;
+  border-radius: 15px;
+  box-shadow: 0 8px 24px rgba(38,68,105,.07);
+}
+
+.answerHeader {
+  position: relative;
+  display: grid;
+  grid-template-columns: 42px 1fr auto;
+  gap: 13px;
+  align-items: start;
+  padding: 20px 22px 17px;
+  border-bottom: 1px solid #edf1f6;
+}
+
+.kindIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: #1769e8;
+}
+
+.kindLabel {
+  margin-top: 2px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 800;
+  color: #376083;
+  background: #eff5fb;
+  white-space: nowrap;
+}
+
+.answerTitle {
+  margin: 0;
+  color: #11264a;
+  font-size: 18px;
+  line-height: 1.42;
+}
+
+.answerSummary {
+  margin: 7px 0 0;
+  color: #637187;
+  font-size: 13px;
+  line-height: 1.68;
+}
+
+.body {
+  padding: 17px 22px 19px 77px;
+}
+
+/* 시스템 구성형 */
+.overviewGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+}
+
+.overviewCard {
+  position: relative;
+  min-height: 126px;
+  padding: 17px 17px 16px;
+  border: 1px solid #dfe8f4;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #fbfdff, #f5f9ff);
+}
+
+.overviewNumber {
+  display: inline-block;
+  margin-bottom: 15px;
+  color: #1769e8;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.overviewCard strong,
+.flowNode strong,
+.checkItem strong,
+.processContent strong,
+.dataNode strong,
+.limitCard strong {
+  display: block;
+  color: #1a2e4e;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.overviewCard p,
+.flowNode p,
+.checkItem p,
+.processContent p,
+.dataNode p,
+.limitCard p {
+  margin: 7px 0 0;
+  color: #68768a;
+  font-size: 12px;
+  line-height: 1.58;
+}
+
+/* 역할/흐름 설명형 */
+.roleFlow {
+  display: grid;
+  grid-template-columns: repeat(7, auto);
+  align-items: stretch;
+  gap: 8px;
+}
+
+.flowNode {
+  width: min(170px, 17vw);
+  min-width: 130px;
+  padding: 15px 13px;
+  border: 1px solid #dbe8f2;
+  border-radius: 12px;
+  background: #f8fbfd;
+}
+
+.flowStep {
+  display: inline-flex;
+  margin-bottom: 10px;
+  padding: 4px 7px;
+  border-radius: 6px;
+  color: #11778c;
+  background: #e9f8fb;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.flowArrow {
+  align-self: center;
+  color: #8aa7b6;
+}
+
+/* 체크리스트형 */
+.checklist {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.checkItem {
+  display: grid;
+  grid-template-columns: 29px 1fr;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid #dfe7f1;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.checkIcon {
+  width: 29px;
+  height: 29px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: #1769e8;
+  background: #edf4ff;
+}
+
+/* 프로세스형 */
+.processTimeline {
+  position: relative;
+  display: grid;
+  gap: 0;
+}
+
+.processItem {
+  position: relative;
+  display: grid;
+  grid-template-columns: 38px 1fr;
+  gap: 13px;
+  min-height: 76px;
+}
+
+.processItem:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 18px;
+  top: 37px;
+  bottom: -1px;
+  width: 2px;
+  background: #d8e6f8;
+}
+
+.processIndex {
+  z-index: 1;
+  width: 37px;
+  height: 37px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: #1769e8;
+  box-shadow: 0 0 0 5px #eef5ff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.processContent {
+  padding: 1px 0 19px;
+}
+
+/* 데이터 파이프라인형 */
+.dataPipeline {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.dataNode {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 15px 13px;
+  border: 1px solid #dce8e4;
+  border-radius: 11px;
+  background: linear-gradient(180deg, #fbfffd, #f2faf7);
+}
+
+.dataIndex {
+  display: inline-grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  margin-bottom: 11px;
+  border-radius: 7px;
+  color: #12806d;
+  background: #e4f7f1;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.dataArrow {
+  align-self: center;
+  color: #7fa99e;
+  flex: 0 0 auto;
+}
+
+/* 자료 부족형 */
+.limitGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.limitCard {
+  padding: 15px;
+  border-radius: 11px;
+  border: 1px solid #e2e7ed;
+  background: #fafbfc;
+}
+
+.limitCard:nth-child(1) {
+  border-color: #cde8d7;
+  background: #f4fbf6;
+}
+
+.limitCard:nth-child(2) {
+  border-color: #f1d9a3;
+  background: #fffaf0;
+}
+
+.limitCard:nth-child(3) {
+  border-color: #d6e0ee;
+  background: #f7f9fc;
+}
+
+.limitState {
+  display: inline-block;
+  margin-bottom: 10px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .02em;
+  color: #69778b;
+}
+
+.noteBox {
+  margin: 0 22px 17px 77px;
+  display: grid;
+  grid-template-columns: 25px auto 1fr;
+  gap: 9px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid #f0c76b;
+  border-radius: 10px;
+  color: #755718;
+  background: #fff9ec;
+  font-size: 12px;
+}
+
+.noteIcon {
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: #f2a400;
+  font-weight: 900;
+}
+
+/* 유형별 상단 포인트 */
+.kind_overview .kindIcon { background: #1769e8; }
+.kind_role .kindIcon { background: #14859a; }
+.kind_checklist .kindIcon { background: #2f74c8; }
+.kind_process .kindIcon { background: #6a5bc7; }
+.kind_data .kindIcon { background: #16866c; }
+.kind_insufficient .kindIcon { background: #c88a18; }
+
+@media (max-width: 1100px) {
+  .body { padding-left: 54px; }
+  .noteBox { margin-left: 54px; }
+  .roleFlow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .flowNode { width: auto; min-width: 0; }
+  .flowArrow { display: none; }
+  .dataPipeline { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dataArrow { display: none; }
+}
+
+@media (max-width: 760px) {
+  .answerHeader { grid-template-columns: 38px 1fr; padding: 17px; }
+  .kindIcon { width: 38px; height: 38px; }
+  .kindLabel { grid-column: 2; width: fit-content; margin-top: 0; }
+  .body { padding: 14px 17px 16px; }
+  .overviewGrid, .checklist, .roleFlow, .dataPipeline, .limitGrid { grid-template-columns: 1fr; }
+  .noteBox { margin: 0 17px 15px; grid-template-columns: 24px 1fr; }
+  .noteBox > span:last-child { grid-column: 1 / -1; }
+}
