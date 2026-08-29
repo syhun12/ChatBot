@@ -56,7 +56,6 @@
   padding: 17px 22px 19px 77px;
 }
 
-/* 시스템 구성형 */
 .overviewGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -105,21 +104,31 @@
   line-height: 1.58;
 }
 
-/* 역할/흐름 설명형 */
 .roleFlow {
   display: grid;
-  grid-template-columns: repeat(7, auto);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: stretch;
-  gap: 8px;
+  gap: 12px;
 }
 
 .flowNode {
-  width: min(170px, 17vw);
-  min-width: 130px;
+  position: relative;
+  min-width: 0;
   padding: 15px 13px;
   border: 1px solid #dbe8f2;
   border-radius: 12px;
   background: #f8fbfd;
+}
+
+.flowNode:not(:last-child)::after {
+  content: "→";
+  position: absolute;
+  right: -18px;
+  top: 50%;
+  z-index: 2;
+  transform: translateY(-50%);
+  color: #87a8b5;
+  font-weight: 900;
 }
 
 .flowStep {
@@ -133,12 +142,6 @@
   font-weight: 900;
 }
 
-.flowArrow {
-  align-self: center;
-  color: #8aa7b6;
-}
-
-/* 체크리스트형 */
 .checklist {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -165,7 +168,6 @@
   background: #edf4ff;
 }
 
-/* 프로세스형 */
 .processTimeline {
   position: relative;
   display: grid;
@@ -198,8 +200,8 @@
   display: grid;
   place-items: center;
   color: #fff;
-  background: #1769e8;
-  box-shadow: 0 0 0 5px #eef5ff;
+  background: #6a5bc7;
+  box-shadow: 0 0 0 5px #f0edff;
   font-size: 12px;
   font-weight: 900;
 }
@@ -208,20 +210,31 @@
   padding: 1px 0 19px;
 }
 
-/* 데이터 파이프라인형 */
 .dataPipeline {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: stretch;
-  gap: 8px;
+  gap: 12px;
 }
 
 .dataNode {
-  flex: 1 1 0;
+  position: relative;
   min-width: 0;
   padding: 15px 13px;
   border: 1px solid #dce8e4;
   border-radius: 11px;
   background: linear-gradient(180deg, #fbfffd, #f2faf7);
+}
+
+.dataNode:not(:last-child)::after {
+  content: "→";
+  position: absolute;
+  right: -18px;
+  top: 50%;
+  z-index: 2;
+  transform: translateY(-50%);
+  color: #79a99b;
+  font-weight: 900;
 }
 
 .dataIndex {
@@ -237,13 +250,6 @@
   font-weight: 900;
 }
 
-.dataArrow {
-  align-self: center;
-  color: #7fa99e;
-  flex: 0 0 auto;
-}
-
-/* 자료 부족형 */
 .limitGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -306,7 +312,6 @@
   font-weight: 900;
 }
 
-/* 유형별 상단 포인트 */
 .kind_overview .kindIcon { background: #1769e8; }
 .kind_role .kindIcon { background: #14859a; }
 .kind_checklist .kindIcon { background: #2f74c8; }
@@ -317,11 +322,8 @@
 @media (max-width: 1100px) {
   .body { padding-left: 54px; }
   .noteBox { margin-left: 54px; }
-  .roleFlow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .flowNode { width: auto; min-width: 0; }
-  .flowArrow { display: none; }
-  .dataPipeline { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .dataArrow { display: none; }
+  .roleFlow, .dataPipeline { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .flowNode::after, .dataNode::after { display: none; }
 }
 
 @media (max-width: 760px) {
