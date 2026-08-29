@@ -4,7 +4,6 @@ import {
   Bot,
   CheckCircle2,
   ChevronLeft,
-  CircleAlert,
   Database,
   FileQuestion,
   FileText,
@@ -22,11 +21,10 @@ import {
   Send,
   Settings,
   ShieldCheck,
-  ThumbsDown,
-  ThumbsUp,
 } from "lucide-react";
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import styles from "./answer-variants.module.css";
+import FeedbackControls, { type FeedbackPayload } from "./components/FeedbackControls";
 
 const exampleQuestions = [
   "DMA 시스템은 어떤 기술로 구성되나요?",
@@ -260,9 +258,9 @@ function createMockAnswer(question: string): AssistantAnswer {
 
   return {
     kind: "insufficient",
-    title: "현재 등록된 발표자료에서 직접적인 근거를 찾기 어렵습니다",
+    title: "현재 등록된 자료에서 직접적인 근거를 찾기 어렵습니다",
     summary:
-      "이 프로토타입은 진도점검 발표자료 내용만 데모 지식으로 사용하고 있습니다. 장비 매뉴얼, 제어 사양서, 알람 목록, 유지보수 절차서 등이 추가되면 현장 운용 질문까지 답변 범위를 확장할 수 있습니다.",
+      "현재 지식에는 진도점검 발표자료가 우선 반영되어 있습니다. 향후 장비 매뉴얼, 제어 사양서, 알람 목록, 유지보수 절차서가 추가되면 현장 운용 질문까지 답변 범위를 확장할 수 있습니다.",
     items: [
       {
         title: "현재 답변 가능한 범위",
@@ -405,7 +403,15 @@ function AnswerBody({ answer }: { answer: AssistantAnswer }) {
   );
 }
 
-function AnswerCard({ answer }: { answer: AssistantAnswer }) {
+function AnswerCard({
+  answer,
+  messageId,
+  onFeedback,
+}: {
+  answer: AssistantAnswer;
+  messageId: string;
+  onFeedback: (payload: FeedbackPayload) => void;
+}) {
   const kindClass: Record<AnswerKind, string> = {
     overview: styles.kind_overview,
     role: styles.kind_role,
@@ -453,14 +459,10 @@ function AnswerCard({ answer }: { answer: AssistantAnswer }) {
 
       <div className="chat-answer-footer">
         <div className="answer-badges">
-          <span className="status-pill blue"><ShieldCheck size={14} />발표자료 근거 답변</span>
+          <span className="status-pill blue"><ShieldCheck size={14} />근거 자료 기반</span>
           <span className="status-pill mint"><FileText size={14} />{answer.sources.length}건 참조</span>
         </div>
-        <div className="feedback">
-          <span>도움이 되었나요?</span>
-          <button aria-label="도움됨"><ThumbsUp size={15} /></button>
-          <button aria-label="도움되지 않음"><ThumbsDown size={15} /></button>
-        </div>
+        <FeedbackControls messageId={messageId} onSubmit={onFeedback} />
       </div>
     </article>
   );
@@ -498,7 +500,7 @@ export default function Home() {
       time: nowLabel(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages((current) => [...current, userMessage]);
     setQuestion("");
     setIsThinking(true);
 
@@ -509,7 +511,7 @@ export default function Home() {
         answer: createMockAnswer(nextQuestion),
         time: nowLabel(),
       };
-      setMessages((prev) => [...prev, assistantMessage]);
+      setMessages((current) => [...current, assistantMessage]);
       setIsThinking(false);
       window.setTimeout(() => inputRef.current?.focus(), 50);
     }, 650);
@@ -527,11 +529,16 @@ export default function Home() {
     }
   }
 
+  function handleFeedback(payload: FeedbackPayload) {
+    // Supabase/API 연결 전에는 브라우저 개발자도구에서 payload를 확인할 수 있습니다.
+    console.info("DMA Assistant feedback", payload);
+  }
+
   return (
     <main className={`app-shell ${collapsed ? "is-collapsed" : ""}`}>
       <aside className="sidebar">
         <div className="brand-row">
-          <div className="brand-mark">⚓</div>
+          <div className="brand-mark" aria-hidden="true" />
           {!collapsed && (
             <div>
               <div className="brand-title">DMA</div>
@@ -579,12 +586,11 @@ export default function Home() {
               <div className="eyebrow">Dynamic Mooring &amp; Anchoring</div>
               <h1>DMA 관련 내용을 질문하세요</h1>
               <p>
-                현재 프로토타입은 진도점검 발표자료를 데모 지식으로 사용합니다.
-                향후 기술문서와 매뉴얼이 추가되면 RAG 검색 범위를 확장합니다.
+                등록된 DMA 기술자료를 기반으로 핵심 내용을 정리하고, 답변에 활용한 근거 자료를 함께 제공합니다.
               </p>
               <div className="status-row">
-                <span className="status-pill green"><span className="dot" />데모 지식자료 적용</span>
-                <span className="status-pill blue"><ShieldCheck size={16} />질문 유형별 응답 UI</span>
+                <span className="status-pill green"><span className="dot" />기술자료 연결됨</span>
+                <span className="status-pill blue"><ShieldCheck size={16} />근거 중심 응답</span>
               </div>
             </div>
 
@@ -604,7 +610,7 @@ export default function Home() {
             </form>
 
             <div className="examples-wrap">
-              <div className="section-label">발표자료 기반 예시 질문</div>
+              <div className="section-label">이런 질문을 해보세요</div>
               <div className="examples-grid">
                 {exampleQuestions.map((item) => (
                   <button className="example-card" key={item} onClick={() => submitQuestion(item)}>
@@ -623,7 +629,7 @@ export default function Home() {
                 <strong>DMA AI Q&amp;A</strong>
                 <span>현재 세션의 대화는 서버에 저장되지 않습니다.</span>
               </div>
-              <div className="chat-status"><span className="dot" /> 발표자료 Demo</div>
+              <div className="chat-status"><span className="dot" /> Knowledge connected</div>
             </div>
 
             <div className="chat-scroll">
@@ -643,10 +649,10 @@ export default function Home() {
 
                 return (
                   <div className="message-row assistant-row" key={message.id}>
-                    <div className="assistant-avatar"><Bot size={19} /></div>
+                    <div className="assistant-avatar" aria-hidden="true"><Bot size={19} /></div>
                     <div className="message-stack assistant-stack">
                       <div className="assistant-label">DMA Assistant <span>{message.time}</span></div>
-                      <AnswerCard answer={message.answer} />
+                      <AnswerCard answer={message.answer} messageId={message.id} onFeedback={handleFeedback} />
                     </div>
                   </div>
                 );
@@ -654,12 +660,12 @@ export default function Home() {
 
               {isThinking && (
                 <div className="message-row assistant-row">
-                  <div className="assistant-avatar"><Bot size={19} /></div>
+                  <div className="assistant-avatar" aria-hidden="true"><Bot size={19} /></div>
                   <div className="thinking-card">
                     <Loader2 size={19} className="spin" />
                     <div>
-                      <strong>질문 유형과 근거 자료를 확인하고 있습니다</strong>
-                      <span>현재는 진도점검 발표자료 기반 데모 응답입니다.</span>
+                      <strong>질문과 관련된 근거 자료를 확인하고 있습니다</strong>
+                      <span>등록된 지식자료에서 관련 내용을 찾는 중입니다.</span>
                     </div>
                   </div>
                 </div>
