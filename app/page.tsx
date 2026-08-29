@@ -4,14 +4,20 @@ import {
   Bot,
   CheckCircle2,
   ChevronLeft,
+  CircleAlert,
+  Database,
   FileQuestion,
   FileText,
   HelpCircle,
   Languages,
+  Layers3,
+  ListChecks,
   Loader2,
   MessageSquareText,
   Paperclip,
+  Radar,
   RotateCcw,
+  Route,
   Search,
   Send,
   Settings,
@@ -20,6 +26,7 @@ import {
   ThumbsUp,
 } from "lucide-react";
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
+import styles from "./answer-variants.module.css";
 
 const exampleQuestions = [
   "DMA 시스템은 어떤 기술로 구성되나요?",
@@ -41,8 +48,10 @@ type AnswerItem = {
   body: string;
 };
 
+type AnswerKind = "overview" | "role" | "checklist" | "process" | "data" | "insufficient";
+
 type AssistantAnswer = {
-  kind: "overview" | "role" | "checklist" | "process" | "data" | "insufficient";
+  kind: AnswerKind;
   title: string;
   summary: string;
   items: AnswerItem[];
@@ -91,7 +100,7 @@ function createMockAnswer(question: string): AssistantAnswer {
           body: "향후 자율기능 정의서, 제어 요구사항, 시스템 사양서가 등록되면 해당 근거를 기반으로 상세 기준을 답변하도록 구성하는 것이 적절합니다.",
         },
       ],
-      note: "RAG 챗봇은 근거가 없는 세부사항을 임의로 생성하지 않고, 현재 지식자료의 한계를 사용자에게 알려야 합니다.",
+      note: "근거가 없는 세부사항은 추정해서 생성하지 않고, 현재 지식자료의 범위를 명확히 안내하도록 설계합니다.",
       sources: [presentationSource("p.19", "DMA Retrofit 정의 및 자율기능 수준")],
     };
   }
@@ -104,15 +113,15 @@ function createMockAnswer(question: string): AssistantAnswer {
         "발표자료에서는 신조 도면(Ship Construction File) 대비 계류·묘박 관련 장비, 제어, 전력, 통신, 센서, 갑판구조를 변경 또는 추가하는 행위를 DMA Retrofit으로 정의합니다.",
       items: [
         {
-          title: "1. Pre-Assessment",
+          title: "Pre-Assessment",
           body: "대상선의 기존 시스템과 자율기능 요건을 사전 검토하여 Retrofit 필요 여부와 검토 범위를 판단합니다.",
         },
         {
-          title: "2. Retrofit 범위 결정",
+          title: "Retrofit 범위 결정",
           body: "기존 탑재 장치, 구조·공간, 전력 시스템, 계류 배열 등 변경 영향을 검토해 개조 범위를 정합니다.",
         },
         {
-          title: "3. Retrofit Engineering",
+          title: "Retrofit Engineering",
           body: "DMA Deck Machinery 및 제어시스템 설치를 위한 개조 설계, 도면, 승인 절차와 기술 요구사항을 구체화합니다.",
         },
         {
@@ -257,47 +266,172 @@ function createMockAnswer(question: string): AssistantAnswer {
     items: [
       {
         title: "현재 답변 가능한 범위",
-        body: "DMA 시스템 구성, 개발 기술, OMV-LiDAR 역할, Retrofit 개념과 검토 범위, 챗봇 개발 구조 등 발표자료에 명시된 내용입니다.",
+        body: "DMA 시스템 구성, 개발 기술, OMV-LiDAR 역할, Retrofit 개념과 검토 범위 등 발표자료에 명시된 내용입니다.",
+      },
+      {
+        title: "현재 자료에 없는 범위",
+        body: "구체적인 장비 운전값, 알람 코드, 부품별 점검 절차, 정비 주기처럼 실제 장비 매뉴얼이 필요한 정보입니다.",
       },
       {
         title: "향후 필요한 자료",
         body: "Winch/Windlass 매뉴얼, 제어 로직, 센서 목록 및 정상범위, 알람 코드, 점검·정비 절차, 장비 도면 등의 기술자료가 필요합니다.",
       },
     ],
-    note: "근거가 부족한 경우 추정 답변보다 ‘자료 부족’을 명확히 표시하는 것이 RAG 기반 기술지원 챗봇의 기본 원칙입니다.",
+    note: "근거가 부족한 경우 추정 답변보다 ‘자료 부족’을 명확히 표시하는 방향으로 설계합니다.",
     sources: [presentationSource("p.21", "AI 챗봇 어시스턴트 개발 기반 구축")],
   };
 }
 
-function AnswerCard({ answer }: { answer: AssistantAnswer }) {
-  const insufficient = answer.kind === "insufficient";
+function kindLabel(kind: AnswerKind) {
+  const labels: Record<AnswerKind, string> = {
+    overview: "시스템 구성",
+    role: "역할·연계",
+    checklist: "적용 검토",
+    process: "절차·프로세스",
+    data: "데이터 흐름",
+    insufficient: "근거 범위",
+  };
+  return labels[kind];
+}
 
-  return (
-    <article className="chat-answer-card">
-      <div className="chat-answer-top">
-        {insufficient ? <FileQuestion size={21} /> : <CheckCircle2 size={21} />}
-        <div>
-          <h2>{answer.title}</h2>
-          <p>{answer.summary}</p>
-        </div>
-      </div>
+function KindIcon({ kind }: { kind: AnswerKind }) {
+  if (kind === "overview") return <Layers3 size={20} />;
+  if (kind === "role") return <Radar size={20} />;
+  if (kind === "checklist") return <ListChecks size={20} />;
+  if (kind === "process") return <Route size={20} />;
+  if (kind === "data") return <Database size={20} />;
+  return <FileQuestion size={20} />;
+}
 
-      <div className="chat-steps">
-        {answer.items.map((item, index) => (
-          <div className="chat-step" key={`${answer.title}-${item.title}`}>
-            <span>{index + 1}</span>
-            <div>
+function AnswerBody({ answer }: { answer: AssistantAnswer }) {
+  if (answer.kind === "overview") {
+    return (
+      <div className={styles.body}>
+        <div className={styles.overviewGrid}>
+          {answer.items.map((item, index) => (
+            <div className={styles.overviewCard} key={item.title}>
+              <span className={styles.overviewNumber}>TECH 0{index + 1}</span>
               <strong>{item.title}</strong>
               <p>{item.body}</p>
             </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (answer.kind === "role") {
+    return (
+      <div className={styles.body}>
+        <div className={styles.roleFlow}>
+          {answer.items.map((item, index) => (
+            <div className={styles.flowNode} key={item.title}>
+              <span className={styles.flowStep}>STEP {index + 1}</span>
+              <strong>{item.title}</strong>
+              <p>{item.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (answer.kind === "checklist") {
+    return (
+      <div className={styles.body}>
+        <div className={styles.checklist}>
+          {answer.items.map((item) => (
+            <div className={styles.checkItem} key={item.title}>
+              <span className={styles.checkIcon}><CheckCircle2 size={16} /></span>
+              <div>
+                <strong>{item.title}</strong>
+                <p>{item.body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (answer.kind === "process") {
+    return (
+      <div className={styles.body}>
+        <div className={styles.processTimeline}>
+          {answer.items.map((item, index) => (
+            <div className={styles.processItem} key={item.title}>
+              <span className={styles.processIndex}>{index + 1}</span>
+              <div className={styles.processContent}>
+                <strong>{item.title}</strong>
+                <p>{item.body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (answer.kind === "data") {
+    return (
+      <div className={styles.body}>
+        <div className={styles.dataPipeline}>
+          {answer.items.map((item, index) => (
+            <div className={styles.dataNode} key={item.title}>
+              <span className={styles.dataIndex}>{index + 1}</span>
+              <strong>{item.title}</strong>
+              <p>{item.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.body}>
+      <div className={styles.limitGrid}>
+        {answer.items.map((item, index) => (
+          <div className={styles.limitCard} key={item.title}>
+            <span className={styles.limitState}>
+              {index === 0 ? "확인 가능" : index === 1 ? "현재 확인 불가" : "추가 자료 필요"}
+            </span>
+            <strong>{item.title}</strong>
+            <p>{item.body}</p>
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function AnswerCard({ answer }: { answer: AssistantAnswer }) {
+  const kindClass: Record<AnswerKind, string> = {
+    overview: styles.kind_overview,
+    role: styles.kind_role,
+    checklist: styles.kind_checklist,
+    process: styles.kind_process,
+    data: styles.kind_data,
+    insufficient: styles.kind_insufficient,
+  };
+
+  return (
+    <article className={`${styles.answerCard} ${kindClass[answer.kind]}`}>
+      <div className={styles.answerHeader}>
+        <div className={styles.kindIcon}><KindIcon kind={answer.kind} /></div>
+        <div>
+          <h2 className={styles.answerTitle}>{answer.title}</h2>
+          <p className={styles.answerSummary}>{answer.summary}</p>
+        </div>
+        <span className={styles.kindLabel}>{kindLabel(answer.kind)}</span>
+      </div>
+
+      <AnswerBody answer={answer} />
 
       {answer.note && (
-        <div className="warning-box compact-warning">
-          <span className="warning-icon">!</span>
-          <strong>{insufficient ? "근거 범위 안내" : "참고"}</strong>
+        <div className={styles.noteBox}>
+          <span className={styles.noteIcon}>!</span>
+          <strong>{answer.kind === "insufficient" ? "근거 범위 안내" : "참고"}</strong>
           <span>{answer.note}</span>
         </div>
       )}
@@ -404,7 +538,7 @@ export default function Home() {
               <div className="brand-sub">Assistant</div>
             </div>
           )}
-          <button className="collapse-btn" onClick={() => setCollapsed((v) => !v)} aria-label="메뉴 접기">
+          <button className="collapse-btn" onClick={() => setCollapsed((value) => !value)} aria-label="메뉴 접기">
             <ChevronLeft size={18} />
           </button>
         </div>
@@ -450,7 +584,7 @@ export default function Home() {
               </p>
               <div className="status-row">
                 <span className="status-pill green"><span className="dot" />데모 지식자료 적용</span>
-                <span className="status-pill blue"><ShieldCheck size={16} />근거 중심 응답 UI</span>
+                <span className="status-pill blue"><ShieldCheck size={16} />질문 유형별 응답 UI</span>
               </div>
             </div>
 
@@ -460,7 +594,7 @@ export default function Home() {
                 ref={inputRef}
                 rows={1}
                 value={question}
-                onChange={(e) => setQuestion(e.target.value)}
+                onChange={(event) => setQuestion(event.target.value)}
                 onKeyDown={onComposerKeyDown}
                 placeholder="DMA 관련 질문을 입력하세요..."
                 aria-label="DMA 질문 입력"
@@ -524,7 +658,7 @@ export default function Home() {
                   <div className="thinking-card">
                     <Loader2 size={19} className="spin" />
                     <div>
-                      <strong>근거 자료를 확인하고 있습니다</strong>
+                      <strong>질문 유형과 근거 자료를 확인하고 있습니다</strong>
                       <span>현재는 진도점검 발표자료 기반 데모 응답입니다.</span>
                     </div>
                   </div>
@@ -533,14 +667,16 @@ export default function Home() {
               <div ref={endRef} />
             </div>
 
-            <form className="chat-composer-wrap" onSubmit={onSubmit}>
+            <form className="composer-wrap" onSubmit={onSubmit}>
               <div className="chat-composer">
-                <Paperclip size={21} />
+                <button type="button" className="attach-button" aria-label="파일 첨부 준비 중">
+                  <Paperclip size={20} />
+                </button>
                 <textarea
                   ref={inputRef}
                   rows={1}
                   value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
+                  onChange={(event) => setQuestion(event.target.value)}
                   onKeyDown={onComposerKeyDown}
                   placeholder="추가 질문을 입력하세요..."
                   aria-label="추가 질문 입력"
@@ -549,7 +685,7 @@ export default function Home() {
                   {isThinking ? <Loader2 size={19} className="spin" /> : <Send size={20} />}
                 </button>
               </div>
-              <div className="composer-caption">Enter 전송 · Shift + Enter 줄바꿈 · 새로고침 시 현재 대화 초기화</div>
+              <div className="composer-note">Enter 전송 · Shift + Enter 줄바꿈 · 새로고침 시 현재 대화 초기화</div>
             </form>
           </section>
         )}
